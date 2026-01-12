@@ -25,6 +25,19 @@ export function initDatabase() {
 			created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 		)
 	`);
+
+	// Create events table
+	db.exec(`
+		CREATE TABLE IF NOT EXISTS events (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			title TEXT NOT NULL,
+			description TEXT,
+			date TEXT NOT NULL,
+			location TEXT,
+			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+		)
+	`);
 }
 
 // Close database connection (useful for graceful shutdown)

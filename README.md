@@ -1,114 +1,120 @@
 # Demo REST API
 
-A simple REST API built with Express.js for user authentication. This project demonstrates user registration and login functionality with JWT token-based authentication.
+A simple RESTful API built with Express.js that supports both user authentication and event management. The API demonstrates secure JWT-based user login/registration as well as basic CRUD operations for events in a SQLite database.
 
 ## Features
 
--   ✅ User registration (signup)
--   ✅ User login with authentication
--   ✅ JWT token generation and verification
--   ✅ Password hashing with bcrypt
--   ✅ Input validation
--   ✅ SQLite database for data persistence
--   ✅ RESTful API design
+-   ✅ **User registration (signup)**
+-   ✅ **User login and JWT authentication**
+-   ✅ **Password hashing with bcrypt**
+-   ✅ **Event creation, update, deletion, and listing**
+-   ✅ **Input validation for users and events**
+-   ✅ **SQLite (better-sqlite3) database persistence**
+-   ✅ **RESTful API structure**
 
 ## Tech Stack
 
--   **Node.js** - Runtime environment
+-   **Node.js** - JavaScript runtime
 -   **Express.js** - Web framework
--   **SQLite** (better-sqlite3) - Database
--   **JWT** (jsonwebtoken) - Authentication tokens
--   **bcryptjs** - Password hashing
--   **nodemon** - Development server with auto-reload
+-   **SQLite** (better-sqlite3) - Lightweight database
+-   **jsonwebtoken** - JWT token generation & verification
+-   **bcryptjs** - Secure password hashing
+-   **nodemon** - Auto-reloading development server
 
 ## Prerequisites
 
--   Node.js (v14 or higher)
--   npm or yarn
+-   Node.js v14 or higher
+-   npm (comes with Node.js)
 
 ## Installation
 
-1. Clone the repository or navigate to the project directory:
+1. Clone this repository and enter the project directory:
 
-```bash
-cd demo-rest-api
-```
+    ```bash
+    git clone https://github.com/yourusername/demo-rest-api.git
+    cd demo-rest-api
+    ```
 
 2. Install dependencies:
-
-```bash
-npm install
-```
+    ```bash
+    npm install
+    ```
 
 ## Configuration
 
-The API uses environment variables for configuration. Create a `.env` file in the root directory (optional):
+You can configure the API using environment variables by creating a `.env` file in the project root:
 
 ```env
 PORT=3000
-JWT_SECRET=your-secret-key-here
+JWT_SECRET=your-strong-secret
 ```
 
-If not provided, the defaults are:
-
--   `PORT`: 3000
--   `JWT_SECRET`: "abctesttoken" (⚠️ **Change this in production!**)
+-   `PORT`: Server port (default: 3000)
+-   `JWT_SECRET`: Secret for JWT signing (default: "abctesttoken"; **change for production!**)
 
 ## Running the Application
 
-### Development Mode
-
-Run the server with auto-reload:
+### Development
 
 ```bash
 npm run dev
 ```
 
-### Production Mode
+Starts the server with auto-reload (nodemon).
 
-Run the server directly:
+### Production
 
 ```bash
 node app.js
 ```
 
-The server will start on `http://localhost:3000` (or the port specified in `PORT` environment variable).
+Starts the API in production mode.
+
+The server runs at `http://localhost:3000` (or as specified by the `PORT` variable).
+
+---
 
 ## API Endpoints
 
-### Base URL
+> **Note:** Most event endpoints require authentication via the `Authorization: Bearer <token>` header.
 
-```
-http://localhost:3000
-```
-
-### Endpoints
-
-#### 1. Health Check
+### 1. Health Check
 
 **GET** `/`
 
 Returns API status and available endpoints.
 
-**Response:**
+<details>
+<summary>Response Example</summary>
 
 ```json
 {
 	"message": "REST API is running",
 	"endpoints": {
 		"signup": "POST /users/signup",
-		"login": "POST /users/login"
+		"login": "POST /users/login",
+		"events": {
+			"list": "GET /events",
+			"detail": "GET /events/:id",
+			"create": "POST /events",
+			"edit": "PUT /events/:id",
+			"delete": "DELETE /events/:id"
+		}
 	}
 }
 ```
 
-#### 2. User Signup
+</details>
+
+---
+
+### 2. User Signup
 
 **POST** `/users/signup`
 
-Register a new user account.
+Register a new user.
 
-**Request Body:**
+**Request:**
 
 ```json
 {
@@ -118,13 +124,14 @@ Register a new user account.
 }
 ```
 
-**Validation Rules:**
+**Validation:**
 
--   `email`: Required, must be a valid email format, must be unique
--   `password`: Required, minimum 6 characters
--   `name`: Required, must not be empty
+-   `email`: required, valid unique email
+-   `password`: required, min. 6 chars
+-   `name`: required, not empty
 
-**Success Response (201):**
+<details>
+<summary>Success (201)</summary>
 
 ```json
 {
@@ -136,13 +143,14 @@ Register a new user account.
 		"name": "John Doe",
 		"createdAt": "2024-01-01T00:00:00.000Z"
 	},
-	"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+	"token": "<jwt token>"
 }
 ```
 
-**Error Responses:**
+</details>
 
--   **400 Bad Request** - Validation failed
+<details>
+<summary>Error: Validation (400)</summary>
 
 ```json
 {
@@ -152,7 +160,10 @@ Register a new user account.
 }
 ```
 
--   **409 Conflict** - Email already exists
+</details>
+
+<details>
+<summary>Error: Conflict (409)</summary>
 
 ```json
 {
@@ -161,13 +172,17 @@ Register a new user account.
 }
 ```
 
-#### 3. User Login
+</details>
+
+---
+
+### 3. User Login
 
 **POST** `/users/login`
 
-Authenticate an existing user and receive a JWT token.
+Authenticate and receive a JWT.
 
-**Request Body:**
+**Request:**
 
 ```json
 {
@@ -176,12 +191,7 @@ Authenticate an existing user and receive a JWT token.
 }
 ```
 
-**Validation Rules:**
-
--   `email`: Required
--   `password`: Required
-
-**Success Response (200):**
+**Response:**
 
 ```json
 {
@@ -193,30 +203,99 @@ Authenticate an existing user and receive a JWT token.
 		"name": "John Doe",
 		"createdAt": "2024-01-01T00:00:00.000Z"
 	},
-	"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+	"token": "<jwt token>"
 }
 ```
 
-**Error Responses:**
+**Error:**
 
--   **400 Bad Request** - Validation failed
+-   400 (validation)
+-   401 (invalid credentials)
+
+---
+
+### 4. Event Management
+
+All event write operations require a valid `Authorization` header.
+
+#### a. List Events
+
+**GET** `/events`
+
+_Returns all events (publicly accessible)._
+
+#### b. Get Single Event
+
+**GET** `/events/:id`
+
+_Returns a single event by ID (public)._
+
+#### c. Create Event
+
+**POST** `/events`  
+_Requires: Authorization: Bearer `<jwt>`_
+
+**Request:**
 
 ```json
 {
-	"success": false,
-	"message": "Validation failed",
-	"errors": ["Email is required", "Password is required"]
+	"title": "My Event",
+	"description": "Description goes here",
+	"date": "2024-12-01T14:00:00Z",
+	"location": "Conference Room"
 }
 ```
 
--   **401 Unauthorized** - Invalid credentials
+**Validation:**
+
+-   `title`: required, non-empty, trimmed, not only spaces
+-   `date`: required, valid date
+-   `description`, `location`: optional
+
+<details>
+<summary>Success (201)</summary>
 
 ```json
 {
-	"success": false,
-	"message": "Invalid email or password"
+	"success": true,
+	"message": "Event created successfully",
+	"event": {
+		"id": 1,
+		"title": "My Event",
+		"description": "Description goes here",
+		"date": "2024-12-01T14:00:00Z",
+		"location": "Conference Room",
+		"createdAt": "...",
+		"updatedAt": "..."
+	}
 }
 ```
+
+</details>
+
+#### d. Edit Event
+
+**PUT** `/events/:id`  
+_Requires: Authorization_
+
+(Same body/validation as create.)
+
+#### e. Delete Event
+
+**DELETE** `/events/:id`  
+_Requires: Authorization_
+
+---
+
+## Authentication
+
+For all protected endpoints, add the JWT token from signup/login to requests:
+
+```
+Authorization: Bearer <your-token-here>
+```
+
+---
 
 ## Usage Examples
 
@@ -227,11 +306,7 @@ Authenticate an existing user and receive a JWT token.
 ```bash
 curl -X POST http://localhost:3000/users/signup \
   -H "Content-Type: application/json" \
-  -d '{
-    "email": "user@example.com",
-    "password": "password123",
-    "name": "John Doe"
-  }'
+  -d '{"email":"user@example.com","password":"password123","name":"John Doe"}'
 ```
 
 **Login:**
@@ -239,70 +314,68 @@ curl -X POST http://localhost:3000/users/signup \
 ```bash
 curl -X POST http://localhost:3000/users/login \
   -H "Content-Type: application/json" \
-  -d '{
-    "email": "user@example.com",
-    "password": "password123"
-  }'
+  -d '{"email":"user@example.com","password":"password123"}'
+```
+
+**Create Event:**
+
+```bash
+curl -X POST http://localhost:3000/events \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <your-token>" \
+  -d '{"title":"Sample Event","date":"2024-12-01","description":"..."}'
+```
+
+**Get Events:**
+
+```bash
+curl http://localhost:3000/events
 ```
 
 ### Using JavaScript (Fetch API)
 
-**Signup:**
-
 ```javascript
-const response = await fetch("http://localhost:3000/users/signup", {
+// Signup or Login first to obtain token, then:
+
+fetch("http://localhost:3000/events", {
 	method: "POST",
 	headers: {
 		"Content-Type": "application/json",
+		Authorization: "Bearer <your-token>",
 	},
 	body: JSON.stringify({
-		email: "user@example.com",
-		password: "password123",
-		name: "John Doe",
+		title: "My Event",
+		date: "2024-12-01",
+		description: "Optional description",
+		location: "Room 101",
 	}),
-});
-
-const data = await response.json();
-console.log(data);
+})
+	.then((res) => res.json())
+	.then(console.log);
 ```
 
-**Login:**
-
-```javascript
-const response = await fetch("http://localhost:3000/users/login", {
-	method: "POST",
-	headers: {
-		"Content-Type": "application/json",
-	},
-	body: JSON.stringify({
-		email: "user@example.com",
-		password: "password123",
-	}),
-});
-
-const data = await response.json();
-console.log(data);
-// Store the token for authenticated requests
-localStorage.setItem("token", data.token);
-```
+---
 
 ## Project Structure
 
 ```
 demo-rest-api/
-├── app.js                 # Main application entry point
+├── app.js                 # Application entry point
 ├── package.json           # Project dependencies and scripts
-├── database.sqlite        # SQLite database file (auto-generated)
-├── controllers/           # Request handlers
-│   └── users-controller.js
-├── models/                # Data models and business logic
-│   └── user.js
-├── routes/                # API route definitions
-│   └── users.js
-├── database/              # Database configuration
+├── database.sqlite        # SQLite DB (created automatically)
+├── controllers/
+│   ├── users-controller.js
+│   └── events-controller.js
+├── models/
+│   ├── user.js
+│   └── event.js
+├── routes/
+│   ├── users.js
+│   └── events.js
+├── database/
 │   └── db.js
-└── util/                  # Utility functions
-    └── auth.js            # JWT token generation and verification
+└── util/
+    └── auth.js            # JWT token utilities
 ```
 
 ## Database Schema
@@ -317,30 +390,42 @@ demo-rest-api/
 | password   | TEXT     | NOT NULL (hashed)          |
 | created_at | DATETIME | DEFAULT CURRENT_TIMESTAMP  |
 
+### Events Table
+
+| Column      | Type     | Constraints                |
+| ----------- | -------- | -------------------------- |
+| id          | INTEGER  | PRIMARY KEY, AUTOINCREMENT |
+| title       | TEXT     | NOT NULL                   |
+| description | TEXT     |                            |
+| date        | TEXT     | NOT NULL                   |
+| location    | TEXT     |                            |
+| created_at  | DATETIME | DEFAULT CURRENT_TIMESTAMP  |
+| updated_at  | DATETIME | DEFAULT CURRENT_TIMESTAMP  |
+
+---
+
 ## Security Features
 
--   **Password Hashing**: Passwords are hashed using bcrypt before storage
--   **JWT Tokens**: Secure token-based authentication
--   **Input Validation**: Server-side validation for all user inputs
--   **Email Uniqueness**: Database constraint ensures unique email addresses
--   **Password Exclusion**: Passwords are never returned in API responses
+-   **bcrypt password hashing**
+-   **JWT token-based authentication**
+-   **Server-side input validation (users/events)**
+-   **Unique user email constraint**
+-   **Passwords are never exposed in API responses**
 
 ## Development
 
-### Scripts
+-   `npm run dev` — Start development server with nodemon
 
--   `npm run dev` - Start development server with nodemon (auto-reload on file changes)
+**Note:** Database initializes on first server start. SQLite file: `database.sqlite`.
 
-### Database
+---
 
-The database is automatically initialized when the server starts. The SQLite database file (`database.sqlite`) is created in the root directory.
+## Additional Notes
 
-## Notes
-
--   JWT tokens expire after 24 hours by default
--   The default JWT secret is for development only. **Always use a strong, unique secret in production.**
--   Passwords must be at least 6 characters long
--   Email addresses are normalized (lowercased and trimmed) before storage
+-   JWT tokens expire after **24 hours** by default
+-   Use a **secure, unique JWT secret** for production environments
+-   Passwords must be at least **6 characters**
+-   Emails are lowercased and trimmed
 
 ## Author
 

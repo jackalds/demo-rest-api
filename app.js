@@ -1,5 +1,6 @@
 import express from "express";
 import userRoutes from "./routes/users.js";
+import eventRoutes from "./routes/events.js";
 import { initDatabase } from "./database/db.js";
 
 const app = express();
@@ -10,6 +11,7 @@ app.use(express.json());
 
 // Routes
 app.use("/users", userRoutes);
+app.use("/events", eventRoutes);
 
 // Basic route
 app.get("/", (req, res) => {
