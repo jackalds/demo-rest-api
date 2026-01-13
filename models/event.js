@@ -183,3 +183,23 @@ export function deleteEvent(id) {
 		throw error;
 	}
 }
+
+export function registerUser(event_id, user_id) {
+	const stmt = db.prepare("INSERT INTO registrations (event_id, user_id) VALUES (?, ?)");
+	try {
+		const result = stmt.run(event_id, user_id);
+		return result.lastInsertRowid;
+	} catch (error) {
+		throw error;
+	}
+}
+
+export function unregisterUser(event_id, user_id) {
+	const stmt = db.prepare("DELETE FROM registrations WHERE event_id = ? AND user_id = ?");
+	try {
+		const result = stmt.run(event_id, user_id);
+		return result.changes > 0;
+	} catch (error) {
+		throw error;
+	}
+}

@@ -1,7 +1,7 @@
 // Events controller
 // Links routes and model together
 
-import { validateEvent, createEvent, updateEvent, getEventById, deleteEvent, getAllEvents } from "../models/event.js";
+import { validateEvent, createEvent, updateEvent, getEventById, deleteEvent, getAllEvents, registerUser, unregisterUser } from "../models/event.js";
 
 // Handle event creation
 export function create(req, res) {
@@ -172,6 +172,66 @@ export function getSingle(req, res) {
 			success: true,
 			message: "Event retrieved successfully",
 			event: event,
+		});
+	} catch (error) {
+		res.status(500).json({
+			success: false,
+			message: "Internal server error",
+			error: error.message,
+		});
+	}
+}
+
+export function register(req, res) {
+	try {
+		const { id } = req.params;
+		const event = getEventById(id);
+		if (!event) {
+			return res.status(404).json({
+				success: false,
+				message: "Event not found",
+			});
+		}
+		const registered = registerUser(id, req.user.id);
+		if (!registered) {
+			return res.status(500).json({
+				success: false,
+				message: "Failed to register for event",
+			});
+		}
+		res.status(200).json({
+			success: true,
+			message: "Registered for event successfully",
+		});
+	} catch (error) {
+		res.status(500).json({
+			success: false,
+			message: "Internal server error",
+			error: error.message,
+		});
+	}
+}
+
+export function unregister(req, res) {
+	try {
+		const { id } = req.params;
+		const event = getEventById(id);
+		if (!event) {
+			return res.status(404).json({
+				success: false,
+				message: "Event not found",
+			});
+		}
+		const unregistered = unregisterUser(id, req.user.id);
+		if (!unregistered) {
+			return res.status(500).json({
+				success: false,
+				message: "Failed to unregister from event",
+			});
+		}
+		res.status(200).json({
+			success: true,
+			message: "Unregistered from event successfully",
 		});
 	} catch (error) {
 		res.status(500).json({
