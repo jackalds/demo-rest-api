@@ -8,11 +8,7 @@ export function validateEvent(eventData) {
 	const { title, description, date, location } = eventData;
 	const errors = [];
 
-	if (
-		!title ||
-		typeof title !== "string" ||
-		title.trim().length === 0
-	) {
+	if (!title || typeof title !== "string" || title.trim().length === 0) {
 		errors.push("Title is required");
 	} else if (title.trim().length !== title.length) {
 		errors.push("Title cannot have leading or trailing spaces");
@@ -58,10 +54,14 @@ export function validateEvent(eventData) {
 
 // Create an event in the database
 export function createEvent(eventData) {
-	const { title, description, date, location } = eventData;
+	const { title, description, date, location, user_id } = eventData;
+
+	if (!user_id) {
+		throw new Error("user_id is required to create an event");
+	}
 
 	// Insert event into database
-	const stmt = db.prepare("INSERT INTO events (title, description, date, location) VALUES (?, ?, ?, ?)");
+	const stmt = db.prepare("INSERT INTO events (title, description, date, location, user_id) VALUES (?, ?, ?, ?, ?)");
 
 	const normalizedTitle = title.trim();
 	const normalizedDescription = description ? description.trim() : null;
@@ -69,7 +69,7 @@ export function createEvent(eventData) {
 	const normalizedLocation = location ? location.trim() : null;
 
 	try {
-		const result = stmt.run(normalizedTitle, normalizedDescription, normalizedDate, normalizedLocation);
+		const result = stmt.run(normalizedTitle, normalizedDescription, normalizedDate, normalizedLocation, user_id);
 
 		// Return the created event
 		return {
@@ -78,6 +78,7 @@ export function createEvent(eventData) {
 			description: normalizedDescription,
 			date: normalizedDate,
 			location: normalizedLocation,
+			user_id,
 			createdAt: new Date().toISOString(),
 			updatedAt: new Date().toISOString(),
 		};
@@ -151,6 +152,7 @@ export function getEventById(id) {
 		location: event.location,
 		createdAt: event.created_at,
 		updatedAt: event.updated_at,
+		user_id: event.user_id,
 	};
 }
 
@@ -166,6 +168,7 @@ export function getAllEvents() {
 		location: event.location,
 		createdAt: event.created_at,
 		updatedAt: event.updated_at,
+		user_id: event.user_id,
 	}));
 }
 

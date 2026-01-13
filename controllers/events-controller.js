@@ -20,7 +20,7 @@ export function create(req, res) {
 		}
 
 		// Create event in database
-		const event = createEvent({ title, description, date, location });
+		const event = createEvent({ title, description, date, location, user_id: req.user.id });
 
 		res.status(201).json({
 			success: true,
@@ -49,6 +49,14 @@ export function edit(req, res) {
 			return res.status(404).json({
 				success: false,
 				message: "Event not found",
+			});
+		}
+
+		// Check if the authenticated user is the owner of the event
+		if (!req.user || !existingEvent.user_id || Number(existingEvent.user_id) !== Number(req.user.id)) {
+			return res.status(403).json({
+				success: false,
+				message: "You are not authorized to edit this event",
 			});
 		}
 
@@ -93,6 +101,14 @@ export function deleteItem(req, res) {
 			return res.status(404).json({
 				success: false,
 				message: "Event not found",
+			});
+		}
+
+		// Check if the authenticated user is the owner of the event
+		if (!req.user || !existingEvent.user_id || Number(existingEvent.user_id) !== Number(req.user.id)) {
+			return res.status(403).json({
+				success: false,
+				message: "You are not authorized to delete this event",
 			});
 		}
 

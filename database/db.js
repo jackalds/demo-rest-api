@@ -35,7 +35,9 @@ export function initDatabase() {
 			date TEXT NOT NULL,
 			location TEXT,
 			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			user_id INTEGER NOT NULL,
+			FOREIGN KEY (user_id) REFERENCES users (id)
 		)
 	`);
 }
