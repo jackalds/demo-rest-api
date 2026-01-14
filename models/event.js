@@ -5,7 +5,7 @@ import { db } from "../database/db.js";
 
 // Validate event data
 export function validateEvent(eventData) {
-	const { title, description, date, location } = eventData;
+	const { title, description, date, location, image } = eventData;
 	const errors = [];
 
 	if (!title || typeof title !== "string" || title.trim().length === 0) {
@@ -46,6 +46,12 @@ export function validateEvent(eventData) {
 		}
 	}
 
+	if (image !== undefined) {
+		if (typeof image !== "string") {
+			errors.push("Image must be a string");
+		}
+	}
+
 	return {
 		isValid: errors.length === 0,
 		errors,
@@ -54,22 +60,23 @@ export function validateEvent(eventData) {
 
 // Create an event in the database
 export function createEvent(eventData) {
-	const { title, description, date, location, user_id } = eventData;
+	const { title, description, date, location, user_id, image } = eventData;
 
 	if (!user_id) {
 		throw new Error("user_id is required to create an event");
 	}
 
 	// Insert event into database
-	const stmt = db.prepare("INSERT INTO events (title, description, date, location, user_id) VALUES (?, ?, ?, ?, ?)");
+	const stmt = db.prepare("INSERT INTO events (title, description, date, location, image, user_id) VALUES (?, ?, ?, ?, ?, ?)");
 
 	const normalizedTitle = title.trim();
 	const normalizedDescription = description ? description.trim() : null;
 	const normalizedDate = date.trim();
 	const normalizedLocation = location ? location.trim() : null;
+	const normalizedImage = image ? image.trim() : null;
 
 	try {
-		const result = stmt.run(normalizedTitle, normalizedDescription, normalizedDate, normalizedLocation, user_id);
+		const result = stmt.run(normalizedTitle, normalizedDescription, normalizedDate, normalizedLocation, normalizedImage, user_id);
 
 		// Return the created event
 		return {
@@ -78,6 +85,7 @@ export function createEvent(eventData) {
 			description: normalizedDescription,
 			date: normalizedDate,
 			location: normalizedLocation,
+			image: image,
 			user_id,
 			createdAt: new Date().toISOString(),
 			updatedAt: new Date().toISOString(),
@@ -89,7 +97,7 @@ export function createEvent(eventData) {
 
 // Update an event in the database
 export function updateEvent(id, updateData) {
-	const { title, description, date, location } = updateData;
+	const { title, description, date, location, image } = updateData;
 
 	// Build update query dynamically based on provided fields
 	const updates = [];
@@ -111,7 +119,10 @@ export function updateEvent(id, updateData) {
 		updates.push("location = ?");
 		values.push(location ? location.trim() : null);
 	}
-
+	if (image !== undefined) {
+		updates.push("image = ?");
+		values.push(image);
+	}
 	if (updates.length === 0) {
 		// No fields to update, return existing event
 		return getEventById(id);
@@ -153,6 +164,7 @@ export function getEventById(id) {
 		createdAt: event.created_at,
 		updatedAt: event.updated_at,
 		user_id: event.user_id,
+		image: event.image,
 	};
 }
 
@@ -169,6 +181,7 @@ export function getAllEvents() {
 		createdAt: event.created_at,
 		updatedAt: event.updated_at,
 		user_id: event.user_id,
+		image: event.image,
 	}));
 }
 

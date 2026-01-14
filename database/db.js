@@ -34,6 +34,7 @@ export function initDatabase() {
 			description TEXT,
 			date TEXT NOT NULL,
 			location TEXT,
+			image TEXT,
 			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 			user_id INTEGER NOT NULL,

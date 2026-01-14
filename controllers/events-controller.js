@@ -7,9 +7,10 @@ import { validateEvent, createEvent, updateEvent, getEventById, deleteEvent, get
 export function create(req, res) {
 	try {
 		const { title, description, date, location } = req.body;
+		const image = req.file ? req.file.filename : null;
 
 		// Validate event data
-		const validation = validateEvent({ title, description, date, location });
+		const validation = validateEvent({ title, description, date, location, image });
 
 		if (!validation.isValid) {
 			return res.status(400).json({
@@ -20,7 +21,7 @@ export function create(req, res) {
 		}
 
 		// Create event in database
-		const event = createEvent({ title, description, date, location, user_id: req.user.id });
+		const event = createEvent({ title, description, date, location, image, user_id: req.user.id });
 
 		res.status(201).json({
 			success: true,
@@ -41,7 +42,7 @@ export function edit(req, res) {
 	try {
 		const { id } = req.params;
 		const { title, description, date, location } = req.body;
-
+		const image = req.file ? req.file.filename : null;
 		// Check if event exists
 		const existingEvent = getEventById(id);
 
@@ -61,7 +62,7 @@ export function edit(req, res) {
 		}
 
 		// Validate update data (merge with existing data for validation)
-		const updateData = { title, description, date, location };
+		const updateData = { title, description, date, location, image };
 		const validation = validateEvent({ ...existingEvent, ...updateData });
 
 		if (!validation.isValid) {
